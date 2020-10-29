@@ -169,14 +169,12 @@ class Loggos:
 
     def delIndexFormat(self, *args):
         format_list = _format.split('|')
+        new_format = _format
         for i in args:
             if not isinstance(i, int):
                 raise TypeError('Для удаления элементов форматирования лога укажите их индексы int через запятую.')
-            try:
-                format_list.pop(i)
-            except IndexError:
-                raise TypeError(f'Элемента форматирования лога с индексом {i} не найдено.')
-        new_format = "|".join(format_list)
+            new_format_list = [x for ind, x in enumerate(format_list) if ind not in args]
+            new_format = "|".join(new_format_list)
         self.file_obj.setFormatter(logging.Formatter(new_format))
         self.stream_obj.setFormatter(logging.Formatter(new_format))
 
