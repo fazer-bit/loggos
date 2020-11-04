@@ -1,124 +1,167 @@
 
 # loggos
 
-Обёртка стандартного logging для удобного создания экземпляров логгеров .
-
+Модуль loggos является обёрткой расширяющей возможности logging.
 ### Лицензия
 * MIT
 ### Инсталляция
     pip install git+https://github.com/fazer-bit/loggos.git
 ### Описание
-Пакет loggos помогает быстро создавать экземпляры класса logging
-с двумя хандлерами stream и file в каждом.
+#####Создание логгера.
 
->       import loggos
->    
->       log_1 = loggos.getLogger("name1")
->       log_1.debug('сообщение первого лога')
->       log_2 = loggos.getLogger("name2")
->       log_2.trace('сообщение второго лога')
->В данном примере созданы два независимых логгера с двумя хандлерами в каждом.
->
->RotatingFileHandler пишет в директорию ..\logs\ относительно скрипта.
->
->Для каждого экземпляра loggos создаётся отдельный файл лога формата: **name.log**
->с ротацией 5 файлов по 50 Mb.
->
->StreamHandler пишет в консоль.
+    - При создании нового логгера с помощью функции getLogger(name),
+        создаются два хандлера: RotatingFileHandler, StreamHandler.
+        Запись логов ведётся в файл директории относительно скрипта ..\logs\nameLog.log
+        Каждый экземпляр лога создаёт собственный файл.
+        StreamHandler - отвечает за вывод в консоль.
+######пример:
+    
+    import loggos
 
->       log_1 = loggos.getLogger("name1")
->       log_2 = loggos.getLogger("name1")
->Если повторно создать логгер с уже существующим именем, то вернётся объект
->уже существующего экземпляра класса, т.е.  
->
->**log_1 == log_2**
+    log1 = loggos.getLogger("myLog_1")
+    log1.debug("Сообщение debug myLog_1")
+    log2 = loggos.getLogger("myLog_2")
+    log2.debug("Сообщение debug myLog_2")
+            
+    >>> 2020-11-04 22:35:48,429 | myLog_1 | DEBUG | Сообщение debug myLog_1
+    >>> 2020-11-04 22:35:48,431 | myLog_2 | DEBUG | Сообщение debug myLog_2
 
->       CRITICAL = 50
->       ERROR = 40
->       WARNING = 30
->       SUCCESS = 25
->       TASK = 23
->       INFO = 20
->       DEBUG = 10
->       TRACE = 5
->       NOTSET = 0
->Существующие уровни логгирования.
+Параллельно с выводом в консоль созданы два файла логов:
+myLog_1.log и myLog_2 в директории ..\logs\
+---  
+#####Имена логгеров.
+  
+    - Если вводимое имя уже зарегистрировано в логгере, то возвращается 
+        существующий объект, если нет, то создаётся новый.
 
->       log = loggos.getLogger("name")
->       log.setLevel(20)
->       log.setLevelFile("SUCCESS")
->       log.setLevelStream(10)
->Для каждого экземпляра логгера можно изменить общий для его хандлеров
->уровень вывода с помощью **log.setLevel.**
->
->Либо корректировать уровень вывода каждого хандлера отдельно. 
+######пример:
+        
+    log1 = loggos.getLogger("myLog_1")
+    log2 = loggos.getLogger("myLog_1")
+    log3 = loggos.getLogger("myLog_3")
+    print(log1)
+    print(log2)
+    print(log3)
+    
+    >>> <loggos.Loggos object at 0x00000205939DCC40>
+    >>> <loggos.Loggos object at 0x00000205939DCC40>
+    >>> <loggos.Loggos object at 0x00000205939DCD00>
+---
+#####Уровни логгирования.
 
->       import loggos
->
->       log = loggos.getLogger("NameLogger")
->       log.task('Сообщение task')
->       log.trace("Сообщение trace")
->
->       > вывод
->       > время | уровень | зарезервировано | зарезервировано | имя потока | имя функции | имя модуля | сообщение
->       2020-10-29 05:09:27,313 | TASK     | -----    | -----    | MainThread | <module>   | run.py     | Сообщение task
->       2020-10-29 05:09:27,314 | DEBUG    | -----    | -----    | MainThread | <module>   | run.py     | Сообщение trace
-> По умолчанию вывод в оба хандлера идёт в таком формате.
+    - К существующим добавлены новые уровни логгирования: 'TRACE', 'TASK', 'SUCCESS'.
+        Все уровни:
+            'CRITICAL': 50
+            'ERROR': 40
+            'WARNING': 30
+            'SUCCESS': 25
+            'TASK': 23
+            'INFO': 20
+            'DEBUG': 10
+            'TRACE': 5
+            'NOTSET': 0
 
->       log = loggos.getLogger("NameLogger")
->       log.task('Сообщение task')
->       log.delIndexFormat(2, 3, 5)
->       log.task('Сообщение task')
->       log.delIndexFormat()
->       log.task('Сообщение task')
->
->       > вывод
->       2020-10-29 05:50:18,644 | TASK     | -----    | -----    | MainThread | <module>   | run.py     | Сообщение task
->       2020-10-29 05:50:18,645 | TASK     | MainThread | run.py     | Сообщение task
->       2020-10-29 05:50:18,646 | TASK     | -----    | -----    | MainThread | <module>   | run.py     | Сообщение task
->Метод **delIndexFormat(2, 3, 5)** удалил поля вывода по индексам.
->
->**delIndexFormat()** без параметров возвращает формат в исходное состояние.
+    - Управление уровнями логгирования возможно для каждого хандлера
+        по отдельности или всеми вместе с помощью методов:
+            setLevel(level)
+            setLevelFile(level)
+            setLevelStream(level)
+        Указание уровней возможно в виде текста или целого числа.
+    
+######пример:
 
->       import loggos
->
->       log = loggos.getLogger("NameLogger")
->       log.debug('Сообщение debug')
->       PREF = 123
->       log.task('Сообщение task')
->       GID = 'gl_gid'
->
->       def func1():
->           GID = 'fn1_gid'
->           PREF = "fn1_pref"
->           log.success('Из функции func1')
->
->       def func2():
->           log.error('Из функции func2')
->
->       class A:
->           PREF = "cl_pref"
->           GID = 'cl_gid'
->
->       def __init__(self):
->           log.critical("Из класса")
->           self.PREF = "ins_pref"
->           log.trace("Из класса")
->
->       f1 = func1()
->       f2 = func2()
->       cl = A()
->
->       > вывод
->       2020-10-29 06:30:06,489 | DEBUG    | -----    | -----    | MainThread | <module>   | run.py     | Сообщение debug
->       2020-10-29 06:30:06,490 | TASK     | 123      | -----    | MainThread | <module>   | run.py     | Сообщение task
->       2020-10-29 06:30:06,491 | SUCCESS  | fn1_pref | fn1_gid  | MainThread | func1      | run.py     | Из функции func1
->       2020-10-29 06:30:06,491 | ERROR    | 123      | gl_gid   | MainThread | func2      | run.py     | Из функции func2
->       2020-10-29 06:30:06,492 | CRITICAL | cl_pref  | cl_gid   | MainThread | __init__   | run.py     | Из класса
->       2020-10-29 06:30:06,493 | DEBUG    | ins_pref | cl_gid   | MainThread | __init__   | run.py     | Из класса
+    log = loggos.getLogger("myLog")
+    log.setLevel(30)
+    log.setLevelFile("WARNING")
+    log.setLevelStream("DEBUG")
+---
 
->Два зарезервированные поля созданы для динамической вставки парметров в лог.
->
->Обязательные имена переменных PREF и GID.
->
->Поиск переменных изначально идёт в пространстве имён globals(), затем в locals() и после в экземпляре класса. 
+#####Форматирование.
+
+    - Сохранены, существующие в logging поля форматирования:
+        'asctime', 'created', 'name', 'levelname', 'msecs', 'levelno', 'lineno',
+        'processName', 'process', 'threadName', 'thread', 'relativeCreated',
+        'pathname': 'pathname', 'module', 'filename', 'funcName', 'message'
+    
+    - Изменения в % - форматировании.
+        Формат поля имеет вид: '%(имя)s'. Все поля передаются в строковом виде
+            с символом 's' на конце.
+        пример: "%(name)-10s | %(levelname)s | %(message)7s"
+    
+    - Реализована возможность динамического изменения формата вывода логов,
+        методом:
+            setFormat(fmt)
+        '...' - новый формат, '' - вывод сообщения без форматирования, None - загрузка дефолтного формата.
+        Новый формат действует на оба хандлера.
+
+######пример:
+
+    log = loggos.getLogger("myLog")
+    log.info("Сообщение дефолтного фармата.")
+    log.setFormat("%(levelname)s, %(module)-10s, %(filename)-10s, %(funcName)-10s, %(name)-10s, %(message)s")
+    log.info("Сообщение нового фармата.")
+    log.setFormat('')
+    log.info("Только сообщение без форматирования.")
+    log.setFormat()
+    log.info("Сброс к дефолтному формату.")
+    
+    >>> 2020-11-04 23:08:40,728 | myLog | INFO | Сообщение дефолтного фармата.
+    >>> INFO, read      , read.py   , <module>  , myLog     , Сообщение нового фармата.
+    >>> Только сообщение без форматирования.
+    >>> 2020-11-04 23:08:40,730 | myLog | INFO | Сброс к дефолтному формату.
+   
+---
+   
+#####Динамическое логгирование переменных кода.
+   
+    - Реализована возможность автоматического логгирования переменных из выполняемого кода
+        Для этого перед именем переменной ставится '*'.
+        пример: "%(name)s | %(*foo)-8s | %(levelname)s | %(message)-10s | %(*var_1)s"
+        В данном случае из кода будут автоматически извлечены значения переменных
+            с именами 'foo' и 'var_1'
+        Поиск имен переменных в модуле ведётся согласно иерархии:
+            globals() -> locals() -> self-атрибуты.
+            Если переменная не найдена, то выводится: '-----'
+
+######пример:
+
+    var = "var_glb"
+    log = loggos.getLogger("myLog")
+    log.setFormat("%(levelname)-8s | %(*foo)-8s | %(*bar)-8s | %(*var)-8s | %(message)s")
+    log.info("mes1")
+    foo = 123
+    log.info("mes2")
+
+    def func():
+    bar = "bar_f"
+    foo = "foo_f"
+    log.info("mes3")
+
+    class A:
+        var = "var_cls"
+        log.info("mes4")
+
+        def __init__(self):
+            self.var = "var_slf"
+            self.foo = "foo_slf"
+            log.info("mes5")
+
+        def mtd1(self):
+            self.bar = "bar_slf"
+            log.info("mes6")
+
+        def mtd2(self):
+            log.info("mes7")
+
+    func()
+    a = A()
+    a.mtd1()
+    a.mtd2()
+    
+    >>> INFO     | -----    | -----    | var_glb  | mes1
+    >>> INFO     | 123      | -----    | var_glb  | mes2
+    >>> INFO     | 123      | -----    | var_cls  | mes4
+    >>> INFO     | foo_f    | bar_f    | var_glb  | mes3
+    >>> INFO     | foo_slf  | -----    | var_slf  | mes5
+    >>> INFO     | foo_slf  | bar_slf  | var_slf  | mes6
+    >>> INFO     | foo_slf  | bar_slf  | var_slf  | mes7
