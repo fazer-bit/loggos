@@ -201,25 +201,24 @@ def getLogger(name):
     :param name: str, имя логгера
     :return: объекты логгера и хандлеров
     """
-    if name:
-        if not isinstance(name, str):
-            raise LoggosError("Имя логгера не str")
-        if len(''.join(name.split())) == 0:
-            raise LoggosError("Имя логгера должно быть не пустой строкой.")
-        if name in Loggos.logger_name_dict:
-            return Loggos.logger_name_dict[name]
-        log_obj = logging.getLogger(name)
-        log_obj.setLevel("TRACE")
-        file_obj = _get_file_handler(name)
-        stream_obj = _get_stream_handler()
-        new_format = _check_format(log_obj, _format_default)
-        formatter_obj = logging.Formatter(new_format)
-        file_obj.setFormatter(formatter_obj)
-        stream_obj.setFormatter(formatter_obj)
-        log_obj.addHandler(file_obj)
-        log_obj.addHandler(stream_obj)
-        log_obj.propagate = False
-        return Loggos(name, log_obj, file_obj, stream_obj)
+    if not isinstance(name, str):
+        raise LoggosError("Имя логгера не str")
+    if len(''.join(name.split())) == 0:
+        raise LoggosError("Имя логгера должно быть не пустой строкой.")
+    if name in Loggos.logger_name_dict:
+        return Loggos.logger_name_dict[name]
+    log_obj = logging.getLogger(name)
+    log_obj.setLevel("TRACE")
+    file_obj = _get_file_handler(name)
+    stream_obj = _get_stream_handler()
+    new_format = _check_format(log_obj, _format_default)
+    formatter_obj = logging.Formatter(new_format)
+    file_obj.setFormatter(formatter_obj)
+    stream_obj.setFormatter(formatter_obj)
+    log_obj.addHandler(file_obj)
+    log_obj.addHandler(stream_obj)
+    log_obj.propagate = False
+    return Loggos(name, log_obj, file_obj, stream_obj)
 
 
 def _check_levels(level, obj_lvl):
