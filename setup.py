@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 with open("README.md", encoding="utf8") as fh:
     long_description = fh.read()
-__version__ = "0.2.2"
+__version__ = "0.2.3"
 
 setup(
     name="loggos",

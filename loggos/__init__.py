@@ -125,7 +125,7 @@ def _check_format(log_obj, fmt):
     :return: str - преобразованный формат.
     """
     re_field = r"%\([*]?[a-zA-Z0-9_]+\)(?:|[-+]?[0-9]+|[0-9]*)s"
-    re_bub = r"(?<=%\()[a-zA-Z0-9*_]+(?=\))"
+    re_sub = r"(?<=%\()[a-zA-Z0-9*_]+(?=\))"
     if not isinstance(fmt, str):
         raise LoggosError("Формат логгера не str.")
     if fmt == '':
@@ -141,10 +141,11 @@ def _check_format(log_obj, fmt):
         if num_re == 0 or num != num_re:
             raise LoggosError("Паттерны логгера нарушают правила % форматирования. "
                               "Примеры: '%(name)s , %(*val)-5s , %(*_foo)10s'.")
-    fields = re.findall(re_bub, fmt)
-    sub_fields = re.split(re_bub, fmt, maxsplit = 0)
+    fields = re.findall(re_sub, fmt)
+    sub_fields = re.split(re_sub, fmt, maxsplit = 0)
     new_format_list = []
     new_extra = {}
+    flag1 = 0
     for ind, sub_val in enumerate(sub_fields):
         new_format_list.append(sub_val)
         try:
@@ -160,6 +161,7 @@ def _check_format(log_obj, fmt):
             new_format_list.append(fld)
             new_extra[fld] = '-----'
         else:
+            flag1 = 1
             flag = 0
             for key, val in _loggos_field.items():
                 if fld == key:
@@ -170,6 +172,9 @@ def _check_format(log_obj, fmt):
             if flag == 0:
                 raise LoggosError(f"Поле логгера '{fld}' не является "
                                   f"допустимым: {', '.join(_loggos_field.keys())}.")
+    if flag1 == 0:
+        raise LoggosError(f"В строке форматирования должно быть хотя бы одно стандартное поле из списка: "
+                          f"{', '.join(_loggos_field.keys())}.")
     new_format = ''.join(new_format_list)
     log_obj.new_extra = new_extra
     return new_format
